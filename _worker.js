@@ -75,7 +75,8 @@ export default {
                             try {
                                 new URL(待验证优选URL);
                                 const 请求优选API内容 = await 请求优选API([待验证优选URL], url.searchParams.get('port') || '443');
-                                const 优选API的IP = 请求优选API内容[0].length > 0 ? 请求优选API内容[0] : 请求优选API内容[1];
+                                let 优选API的IP = 请求优选API内容[0].length > 0 ? 请求优选API内容[0] : 请求优选API内容[1];
+                                优选API的IP = 优选API的IP.map(item => item.replace(/#(.+)$/, (_, remark) => '#' + decodeURIComponent(remark)));
                                 return new Response(JSON.stringify({ success: true, data: 优选API的IP }, null, 2), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
                             } catch (err) {
                                 const errorResponse = { msg: '验证优选API失败，失败原因：' + err.message, error: err.message };
@@ -1215,6 +1216,7 @@ function Surge订阅配置文件热补丁(content, url, config_JSON) {
 
 async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SUB", config_JSON) {
     const KV容量限制 = 4;//MB
+    if (env.OFF_LOG) return;
     try {
         const 当前时间 = new Date();
         const 日志内容 = { TYPE: 请求类型, IP: 访问IP, ASN: `AS${request.cf.asn || '0'} ${request.cf.asOrganization || 'Unknown'}`, CC: `${request.cf.country || 'N/A'} ${request.cf.city || 'N/A'}`, URL: request.url, UA: request.headers.get('User-Agent') || 'Unknown', TIME: 当前时间.getTime() };
